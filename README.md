@@ -3,6 +3,9 @@ cafd
 
 computer-aided fish design
 
+cafd.py
+-------
+
 This is a simplistic "3D" object viewer written in Python, which relies on pygame.
 
 Despite the name, it does not (yet) provide a user interface for designing objects, only for viewing them.
