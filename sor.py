@@ -17,6 +17,15 @@ def read_spline_pts(fname) :
         pts.append( [float(row[0]), float(row[1]), 0.0] )
     return pts
     
+
+def has_zero_in_rotation_axis(pts, axis):    
+    idx = 0 if axis == 'x' else 1
+    epsilon = 0.01
+    for pt in pts:
+        if abs(0.0 - pt[idx]) < epsilon:
+            return True
+    return False
+    
     
 try:
     infile = sys.argv[1]
@@ -49,9 +58,13 @@ except:
 
 # axis of rotation
 try:
-    axis = sys.argv[4]
+    axis = sys.argv[4].lower()
 except:
-    axis = 'X'    
+    axis = 'x'    
+    
+if has_zero_in_rotation_axis(pts, axis):
+    print('error in point list: value too close to the axis of rotation is not allowed')
+    exit()
 
 # inkscape object folder a.k.a. our output folder
 try:
@@ -83,11 +96,7 @@ for lat in range(lat_lines) :
         new_lat_pt = new_pt
         print(new_lat_pt)
         for long in range(long_lines - 1) :
-            # TODO: add method 2 simple3d
-            if axis == 'X':
-                new_lat_pt = simple3d.rotX(new_lat_pt, rho)
-            else:
-                new_lat_pt = simple3d.rotY(new_lat_pt, rho)
+            new_lat_pt = simple3d.rotate(new_lat_pt, axis, rho)
             fish.append_vertex(new_lat_pt[0], new_lat_pt[1], new_lat_pt[2])
             last_pt_idx += 1
             fish.connect_last(0.5, 0.0, 0.0, 0.2)

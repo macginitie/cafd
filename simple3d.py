@@ -3,6 +3,7 @@ import math
 import random
 import sys
 
+
 def rotX(v, angle) :
    "rotate vertex v angle radians about the X axis"
    c = math.cos(angle)
@@ -10,6 +11,7 @@ def rotX(v, angle) :
    newY = v[1]*c - v[2]*s
    newZ = v[1]*s + v[2]*c
    return [v[0], newY, newZ]
+   
 
 def rotY(v, angle) :
    "rotate vertex v angle radians about the Y axis"
@@ -18,6 +20,7 @@ def rotY(v, angle) :
    newX = v[0]*c - v[2]*s
    newZ = v[0]*s + v[2]*c
    return [newX, v[1], newZ] 
+   
 
 def rotZ(v, angle) :
    "rotate vertex v angle radians about the Z axis"
@@ -26,13 +29,25 @@ def rotZ(v, angle) :
    newX = v[0]*c - v[1]*s
    newY = v[0]*s + v[1]*c
    return [newX, newY, v[2]]
+   
     
+def rotate(v, axis, angle):
+   ax = axis.lower()
+   if ax == 'x':
+      return rotX(v, angle)
+   elif ax == 'y':
+      return rotY(v, angle)
+   else:
+      return rotZ(v, angle)
+      
+
 def getRandomColor() : 
    rgb = []
    rgb.append(random.random())
    rgb.append(random.random())
    rgb.append(random.random())
    return rgb
+   
 
 def getRandomDarkColor() : 
    rgb = []
@@ -40,6 +55,7 @@ def getRandomDarkColor() :
    rgb.append(random.random()/2.)
    rgb.append(random.random()/2.)
    return rgb
+   
 
 def getRandomBlueColor() : 
    rgb = []
@@ -66,6 +82,7 @@ class Simple3d :
    E_BLUE = 4
    E_ALPHA = 5
    
+   
    def __init__(self, path=None, name=None) :
       self.name = name
       self.path = path
@@ -73,6 +90,7 @@ class Simple3d :
       self.face = []
       self.vertex = []
       self.normal = []
+      
    
    def debug(self) :
       "print the object data"
@@ -90,24 +108,28 @@ class Simple3d :
       print( "normal:" )
       for n in self.normal :
          print( n[0], n[1], n[2] )
+         
       
    def read_vertices(self, vfile) :
       "read the list of x,y,z values from objname.vertices"
       reader = csv.reader(open(vfile, 'r'), delimiter=',')
       for row in reader :
          self.append_vertex( float(row[0]), float(row[1]), float(row[2]) )
+         
    
    def read_edges(self, efile) :
       "read the list of edges from objname.edges"
       reader = csv.reader(open(efile, 'r'), delimiter=',')
       for row in reader :
          self.append_edge( int(row[0]), int(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5]) )
+         
    
    def read_faces(self, ffile) :
       "read the list of faces from objname.faces"
       reader = csv.reader(open(ffile, 'r'), delimiter=',')
       for row in reader :
          self.append_face( int(row[0]), int(row[1]), int(row[2]), float(row[3]), float(row[4]), float(row[5]), float(row[6]) )
+         
    
    def compute_face_normals(self) :
       self.normal = []
@@ -129,6 +151,7 @@ class Simple3d :
          print(v1,v2,abnrml,vec_len)
          print(sys.exc_info()[0])
 
+
    def load_object(self, path, name) :
       "read object data from 3 related files"
       self.path = path
@@ -145,6 +168,7 @@ class Simple3d :
       self.read_faces(fname + ".faces")
       self.compute_face_normals()
       
+      
    def store_object(self, path, name) :
       "write object data to 3 related files"
       self.path = path
@@ -160,23 +184,27 @@ class Simple3d :
       # store path/name.faces
       self.write_faces(fname + ".faces")
       
+      
    def write_vertices(self, vfile) :
       "write the list of x,y,z values to objname.vertices"
       writer = csv.writer(open(vfile, 'w', newline=''), delimiter=',')
       for v in self.vertex :
          writer.writerow(v)
+         
    
    def write_edges(self, efile) :
       "write the list of edges to objname.edges"
       writer = csv.writer(open(efile, 'w', newline=''), delimiter=',')
       for e in self.edge :
          writer.writerow(e)
+         
    
    def write_faces(self, ffile) :
       "write the list of faces to objname.faces"
       writer = csv.writer(open(ffile, 'w', newline=''), delimiter=',')
       for f in self.face :
          writer.writerow(f)
+         
    
    def store_as_wf_obj(self, path, name, type='f') :
       "write object data to single 'WaveFront'-format .obj file"
@@ -204,27 +232,42 @@ class Simple3d :
          else :
             for e in self.edge :
                objfile.write('l ' + str(e[0]+1) + ' ' + str(e[1]+1) + '\n')
+               
       
    def append_vertex(self, x, y, z) :
       "add a 3D point to the object"
       self.vertex.append([x, y, z])
+      
 
    def append_edge(self, v1, v2, r=0.0, g=0.0, b=0.0, a=1.0) :
       "add a pair of indices into the vertex list, which defines an edge"
       self.edge.append([v1, v2, r, g, b, a])
+      
 
    def append_face(self, v1, v2, v3, r=0.5, g=0.5, b=0.5, a=1.0) :
       "only triangles are currently supported"
       self.face.append([v1, v2, v3, r, g, b, a])
       
+      
    def append_normal(self, x, y, z) :
       "add a normal to the list of face normals"
       self.normal.append([x, y, z])
+      
 
    def connect_last(self, r=0.0, g=0.0, b=0.0, a=1.0) :
       "add an edge betwen the 2 most-recently-added vertices"
       self.append_edge(len(self.vertex)-2, len(self.vertex)-1, r, g, b, a)
       
+      
+   def rotate(self, axis, angle):
+      if axis.lower() == 'y':
+         self.rotY(angle)
+      elif axis.lower() == 'z':  
+         self.rotZ(angle)
+      else:
+         self.rotX(angle)      
+         
+         
    def rotX(self, angle) :
       "rotate object angle radians about the X axis"
       c = math.cos(angle)
@@ -236,6 +279,7 @@ class Simple3d :
          newV.append([v[0], newY, newZ])
       self.vertex = newV
       self.compute_face_normals()
+      
          
    def rotY(self, angle) :
       "rotate object angle radians about the Y axis"
@@ -248,6 +292,7 @@ class Simple3d :
          newV.append([newX, v[1], newZ])
       self.vertex = newV
       self.compute_face_normals()
+      
          
    def rotZ(self, angle) :
       "rotate object angle radians about the Z axis"
@@ -260,6 +305,7 @@ class Simple3d :
          newV.append([newX, newY, v[2]])
       self.vertex = newV
       self.compute_face_normals()
+      
          
    def move(self, vector) :
       "displace object by vector"
@@ -278,11 +324,11 @@ class Simple3d :
          newN.append([newX, newY, newZ])
       self.normal = newN
       
+      
    def z_sort(self, sort_type) :
       newF = []
       faceZ = []
       index = 0
-      # compute avg z value of @ face
       for f in self.face :
          if sort_type == "min" :
             zval = min(self.vertex[f[0]][2], self.vertex[f[1]][2])
@@ -290,7 +336,7 @@ class Simple3d :
          elif sort_type == "max" :
             zval = max(self.vertex[f[0]][2], self.vertex[f[1]][2])
             zval = max(zval, self.vertex[f[2]][2])
-         else :
+         else :       # compute avg z value of @ face
             zval = (self.vertex[f[0]][2] + self.vertex[f[1]][2] + self.vertex[f[2]][2])/3.0
          faceZ.append([zval, index])
          index += 1
@@ -305,6 +351,7 @@ class Simple3d :
             newN.append(self.normal[index])
       self.face = newF
       self.normal = newN
+      
    
    # added lines are opaque black by default
    def extrude_linear(self, p0, p1, num_new_pts, red = 0.0, green = 0.0, blue = 0.0, alpha = 1.0) :
@@ -317,6 +364,7 @@ class Simple3d :
          self.append_vertex( i*dx + p0[0], i*dy + p0[1], i*dz + p0[2] )
          if (i > 0) :            
             self.connect_last(red, green, blue, alpha)
+            
 			
    def copy_vertices(self, first, last, vector, scale) :
       "copy a set of vertices, displaced by a vector & scaled"
@@ -326,12 +374,14 @@ class Simple3d :
          newY = (newPt[1] + vector[1])*scale
          newZ = (newPt[2] + vector[2])*scale
          self.append_vertex(newX, newY, newZ)
+         
 		
    def copy_edges(self, first, last, offset) :
       "replicate a set of edges, offsetting @ vertex index"
       for i in range(first,last+1) :
          e = self.edge[i]
          self.append_edge(e[0]+offset, e[1]+offset, e[2], e[3], e[4], e[5])
+         
 
    def getRandomColor(self) : 
       rgb = []
@@ -339,6 +389,7 @@ class Simple3d :
       rgb.append(random.random())
       rgb.append(random.random())
       return rgb
+      
          
    def getRandomDarkColor(self) : 
       rgb = []
@@ -346,6 +397,7 @@ class Simple3d :
       rgb.append(random.random()/2.)
       rgb.append(random.random()/2.)
       return rgb
+      
 
    def getRandomBlueColor(self) : 
       rgb = []
@@ -353,6 +405,7 @@ class Simple3d :
       rgb.append(random.random()/2.)
       rgb.append(random.random())
       return rgb
+      
 
    def assign_random_colors(self) :
       "assign a random color to each edge & each face"
@@ -368,6 +421,7 @@ class Simple3d :
          f[4] = color[1]
          f[5] = color[2]
          # alpha         
+         
 
    def assign_random_dark_colors(self) :
       "assign a random 'dark' color to each edge & each face"
@@ -384,6 +438,7 @@ class Simple3d :
          f[self.F_BLUE] = color[2]
          # alpha         
          
+         
    def assign_random_blue_colors(self) :
       "assign a random 'blue-ish' color to each edge & each face"
       for e in self.edge :
@@ -398,6 +453,7 @@ class Simple3d :
          f[self.F_GREEN] = color[1]
          f[self.F_BLUE] = color[2]
          # alpha         
+         
    
    def assign_grey_shade(self, eye_coord) :
       """ 
@@ -433,6 +489,7 @@ class Simple3d :
          self.face[index][self.F_BLUE] = shade
          index += 1
       print('completed.')
+      
          
    def assign_aqua_shade(self, eye_coord) :
       """ 
@@ -467,6 +524,7 @@ class Simple3d :
          index += 1
       print('calcul8d ' + str(len(self.face)) + ' dot products')
       
+      
    def replitranslacate(self, vector) :
       # add a copy displaced by vector = replicate + translate
       vlen = len(self.vertex)
@@ -477,6 +535,7 @@ class Simple3d :
       for i in range(len(self.face)) :
          self.append_face(self.face[i][0] + vlen, self.face[i][1] + vlen, self.face[i][2] + vlen, self.face[i][3], self.face[i][4], self.face[i][5], self.face[i][6])
          
+         
    def repliscalecate(self, vector) :
       # add a copy scaled by vector = replicate + scale
       vlen = len(self.vertex)
@@ -486,6 +545,7 @@ class Simple3d :
          self.append_edge(self.edge[i][0] + vlen, self.edge[i][1] + vlen, self.edge[i][2], self.edge[i][3], self.edge[i][4], self.edge[i][5])
       for i in range(len(self.face)) :
          self.append_face(self.face[i][0] + vlen, self.face[i][1] + vlen, self.face[i][2] + vlen, self.face[i][3], self.face[i][4], self.face[i][5], self.face[i][6])
+         
 
    def assimilate(self, other) :
       vlen = len(self.vertex)
@@ -495,6 +555,7 @@ class Simple3d :
          self.append_face(f[0] + vlen, f[1] + vlen, f[2] + vlen, f[3], f[4], f[5], f[6])
       for e in other.edge :
          self.append_edge(e[0] + vlen, e[1] + vlen, e[2], e[3], e[4], e[5])
+         
          
    def bounding_box(self) :
       xrange = [0,0]
@@ -517,6 +578,7 @@ class Simple3d :
          elif v[2] > zrange[1]:
             zrange[1] = v[2]
       return (xrange, yrange, zrange) 
+      
 
 if __name__ == '__main__' :
    o = Simple3d()
