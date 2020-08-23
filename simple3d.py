@@ -121,13 +121,14 @@ class Simple3d :
       "read the list of edges from objname.edges"
       reader = csv.reader(open(efile, 'r'), delimiter=',')
       for row in reader :
-         self.append_edge( int(row[0]), int(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5]) )
+         self.append_edge( int(row[0]), int(row[1]), (float(row[2]), float(row[3]), float(row[4]), float(row[5])) )
          
    
    def read_faces(self, ffile) :
       "read the list of faces from objname.faces"
       reader = csv.reader(open(ffile, 'r'), delimiter=',')
       for row in reader :
+         print(row)
          self.append_face( int(row[0]), int(row[1]), int(row[2]), float(row[3]), float(row[4]), float(row[5]), float(row[6]) )
          
    
@@ -239,8 +240,9 @@ class Simple3d :
       self.vertex.append([x, y, z])
       
 
-   def append_edge(self, v1, v2, r=0.0, g=0.0, b=0.0, a=1.0) :
+   def append_edge(self, v1, v2, color=(0.0, 0.0, 0.0, 1.0)) :
       "add a pair of indices into the vertex list, which defines an edge"
+      r,g,b,a = color
       self.edge.append([v1, v2, r, g, b, a])
       
 
@@ -254,9 +256,10 @@ class Simple3d :
       self.normal.append([x, y, z])
       
 
-   def connect_last(self, r=0.0, g=0.0, b=0.0, a=1.0) :
+   def connect_last(self, color=(0.0, 0.0, 0.0, 1.0)) :
       "add an edge betwen the 2 most-recently-added vertices"
-      self.append_edge(len(self.vertex)-2, len(self.vertex)-1, r, g, b, a)
+      r,g,b,a = color
+      self.append_edge(len(self.vertex)-2, len(self.vertex)-1, (r, g, b, a))
       
       
    def rotate(self, axis, angle):
