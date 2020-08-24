@@ -49,7 +49,7 @@ try:
     long_lines = int(sys.argv[2])
 except:
     long_lines = 10
-    q
+    
 # radians for rotations
 theta = math.radians(180/lat_lines)   # divide semicircle into lat_lines segments
 rho = math.radians(360/long_lines)   # divide circle into long_lines segments
