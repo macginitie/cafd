@@ -129,7 +129,7 @@ class Simple3d :
       reader = csv.reader(open(ffile, 'r'), delimiter=',')
       for row in reader :
          print(row)
-         self.append_face( int(row[0]), int(row[1]), int(row[2]), float(row[3]), float(row[4]), float(row[5]), float(row[6]) )
+         self.append_face( int(row[0]), int(row[1]), int(row[2]), (float(row[3]), float(row[4]), float(row[5]), float(row[6])) )
          
    
    def compute_face_normals(self) :
@@ -246,8 +246,10 @@ class Simple3d :
       self.edge.append([v1, v2, r, g, b, a])
       
 
-   def append_face(self, v1, v2, v3, r=0.5, g=0.5, b=0.5, a=1.0) :
+   def append_face(self, v1, v2, v3, color) :
       "only triangles are currently supported"
+      # r=0.5, g=0.5, b=0.5, a=1.0
+      r,g,b,a = color
       self.face.append([v1, v2, v3, r, g, b, a])
       
       

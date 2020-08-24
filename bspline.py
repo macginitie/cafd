@@ -1,3 +1,8 @@
+"""
+I (macginitie) didn't write this, but I can't credit the author 
+since I've forgotten whence I stole it :-/ ...sorry!
+"""
+
 import numpy as np
 from scipy import interpolate
 
