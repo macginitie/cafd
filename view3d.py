@@ -20,17 +20,21 @@ z = 2
 class View3d :
    "methods related to projecting 3d objects onto a 2d screen"
    
-   def __init__(self, screen, viewport, world, eye, distance) :
+   def __init__(self, screen, viewport, world, eye, vp_plane) :
       # screen coords (left, top, right, bottom)
       self.screen = screen
       # "viewport" coords (l, t, r, b)
       self.viewport = viewport
+      self.vp_width = abs(self.viewport[right] - self.viewport[left])
+      self.vp_height = abs(self.viewport[bottom] - self.viewport[top])
+      self.screen_w = abs(self.screen[right] - self.screen[left])
+      self.screen_h = abs(self.screen[top] - self.screen[bottom])
       # world bounding box (xmin, xmax, ymin, ymax, zmin, zmax) [not used!]
       self.world = world
       # world coordinates of the "viewer's eye" (x, y, z)
       self.eye = eye
       # z distance between the viewer's eye and the "viewport"
-      self.distance = distance
+      self.distance = vp_plane
       self.debug()
       
    def debug(self) :
@@ -39,12 +43,12 @@ class View3d :
       print( "world:", self.world )
       print( "eye:", self.eye )
       print( "distance:", self.distance )
-      print( "w2v((1,1,1)):", self.w2v((1,1,1)) )
-      print( "v2s((1,1)):", self.v2s((1,1)) )
+      print( "w2v((1,2,3)):", self.w2v((1,2,3)) )
+      print( "v2s(w2v((1,2,3))):", self.v2s(self.w2v((1,2,3))) )
       
    def w2v(self, point3) :
       "project a 3d point onto the 2d viewport"
-      ztest = (point3[z] - self.eye[z])
+      ztest = abs(self.eye[z] - point3[z])
       # TO DO: clipping
       if ztest > 0.1:
          factor = (1.0 * self.distance)/ztest
@@ -54,10 +58,10 @@ class View3d :
         
    def v2s(self, point2) :
       "convert from viewport coords to screen coords"
-      relativeX = (point2[x] - self.viewport[left]) / (self.viewport[right] - self.viewport[left])
-      screenX = self.screen[left] + relativeX * (self.screen[right] - self.screen[left])
-      relativeY = (point2[y] - self.viewport[top]) / (self.viewport[bottom] - self.viewport[top])
-      screenY = self.screen[top] + relativeY * (self.screen[bottom] - self.screen[top])      
+      relativeX = abs(point2[x] - self.viewport[left]) / self.vp_width
+      screenX = self.screen[left] + relativeX * self.screen_w
+      relativeY = abs(point2[y] - self.viewport[top]) / self.vp_height
+      screenY = self.screen[top] + relativeY * self.screen_h
       # TO DO: clipping
       return (screenX, screenY)
 

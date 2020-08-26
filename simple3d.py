@@ -42,6 +42,7 @@ def rotate(v, axis, angle):
       
 
 def getRandomColor() : 
+   "a list of 3 random.random()s"
    rgb = []
    rgb.append(random.random())
    rgb.append(random.random())
@@ -50,6 +51,7 @@ def getRandomColor() :
    
 
 def getRandomDarkColor() : 
+   "a list of 3 random.random()/2.s"
    rgb = []
    rgb.append(random.random()/2.)
    rgb.append(random.random()/2.)
@@ -58,6 +60,7 @@ def getRandomDarkColor() :
    
 
 def getRandomBlueColor() : 
+   "a random blue-tinted color"
    rgb = []
    rgb.append(random.random()/2.)
    rgb.append(random.random()/2.)
@@ -128,7 +131,6 @@ class Simple3d :
       "read the list of faces from objname.faces"
       reader = csv.reader(open(ffile, 'r'), delimiter=',')
       for row in reader :
-         print(row)
          self.append_face( int(row[0]), int(row[1]), int(row[2]), (float(row[3]), float(row[4]), float(row[5]), float(row[6])) )
          
    
@@ -582,8 +584,83 @@ class Simple3d :
             zrange[0] = v[2]
          elif v[2] > zrange[1]:
             zrange[1] = v[2]
-      return (xrange, yrange, zrange) 
+      return (xrange, yrange, zrange)
+
+   def unique_pt( self, idx, pt_dict, pt ) :
+      if pt in pt_dict :
+         return pt_dict[pt], False
+      pt_dict[pt] = idx
+      return idx, True
       
+   def subdivide(self, mp_munger = None) :
+      # replace each triangular face with 4 smaller triangles by connecting edge midpoints
+      newF = []
+      newE = []
+      newV = []
+      munjables = []
+      pt_dict = {}
+      is_new = False
+      for f in self.face :
+         # unpack for code readability
+         pt1 = self.vertex[f[0]]
+         (x1,y1,z1) = pt1[0], pt1[1], pt1[2]
+         pt1_idx, is_new = self.unique_pt( len(newV), pt_dict, (x1, y1, z1) )
+         if is_new :
+            newV.append(pt1)
+         
+         pt2 = self.vertex[f[1]]
+         (x2,y2,z2) = pt2[0], pt2[1], pt2[2]
+         pt2_idx, is_new = self.unique_pt( len(newV), pt_dict, (x2,y2,z2) )
+         if is_new :
+            newV.append(pt2)   
+         
+         pt3 = self.vertex[f[2]]
+         (x3,y3,z3) = pt3[0], pt3[1], pt3[2]
+         pt3_idx, is_new = self.unique_pt( len(newV), pt_dict, (x3,y3,z3) )
+         if is_new :
+            newV.append(pt3)
+         
+         midpt1 = (0.5*(x1+x2), 0.5*(y1+y2), 0.5*(z1+z2))
+         midpt1_idx, is_new = self.unique_pt( len(newV), pt_dict, midpt1 )
+         if is_new : 
+            newV.append([midpt1[0], midpt1[1], midpt1[2]])
+            munjables.append(midpt1_idx)
+            
+         midpt2 = (0.5*(x3+x2), 0.5*(y3+y2), 0.5*(z3+z2))
+         midpt2_idx, is_new = self.unique_pt( len(newV), pt_dict, midpt2 )
+         if is_new : 
+            newV.append([midpt2[0], midpt2[1], midpt2[2]])
+            munjables.append(midpt2_idx)
+         
+         midpt3 = (0.5*(x3+x1), 0.5*(y3+y1), 0.5*(z3+z1))
+         midpt3_idx, is_new = self.unique_pt( len(newV), pt_dict, midpt3 )
+         if is_new : 
+            newV.append([midpt3[0], midpt3[1], midpt3[2]])
+            munjables.append(midpt3_idx)
+         
+         newF.append([pt1_idx, midpt1_idx, midpt3_idx, 0,0,0, 1.])
+         newF.append([midpt3_idx, midpt1_idx, midpt2_idx, 0,0,0, 1.])
+         newF.append([midpt1_idx, pt2_idx, midpt2_idx, 0,0,0, 1.])
+         newF.append([midpt3_idx, midpt2_idx, pt3_idx, 0,0,0, 1.])
+         
+         newE.append([pt1_idx, midpt1_idx, 0,0,0, 1.])
+         newE.append([midpt1_idx, pt2_idx, 0,0,0, 1.])
+         newE.append([pt2_idx, midpt2_idx, 0,0,0, 1.])
+         newE.append([midpt2_idx, pt3_idx, 0,0,0, 1.])
+         newE.append([midpt1_idx, midpt3_idx, 0,0,0, 1.])
+         newE.append([midpt1_idx, midpt2_idx, 0,0,0, 1.])
+         newE.append([midpt2_idx, midpt3_idx, 0,0,0, 1.])
+         newE.append([pt1_idx, midpt3_idx, 0,0,0, 1.])
+         newE.append([midpt3_idx, pt3_idx, 0,0,0, 1.])
+
+      if mp_munger is not None :
+         for vtx in munjables :
+            newV[vtx] = mp_munger(newV[vtx])
+        
+      self.face = newF
+      self.edge = newE
+      self.vertex = newV
+         
 
 if __name__ == '__main__' :
    o = Simple3d()

@@ -25,6 +25,9 @@ if len(sys.argv) < 2 :
 # read path for .obj output from cafd.config   
 cfg = config.CafdConfig()
 obj_path = cfg.obj_path()
+# window dimensions
+w = int(cfg.screen_width())  # 900
+h = int(cfg.screen_height())  # 900
    
 # initial settings
 outline_width = 0
@@ -34,9 +37,6 @@ move_eye = False
 cull_backfaces = True
 debug = False
 
-# window dimensions
-w = 900
-h = 900
 # slightly off-white background
 bgcolor = (0xf5,0xf5,0xf5)
 # CPU throttle (larger value ==> less CPU hogging)
